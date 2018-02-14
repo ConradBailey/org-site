@@ -1,0 +1,13 @@
+    <div>{{! nav }}
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="{{site-url}}">{{site-main-title}}</a></h1>
+        <p>{{site-sub-title}}</p>
+        {{#show-nav-links}}
+        <ul>
+          {{#nav-links}}
+          <li><a href="{{site-url}}/{{nav-url}}">{{nav-name}}</a></li>
+          {{/nav-links}}
+        </ul>
+        {{/show-nav-links}}
+      </header>
+    </div>
