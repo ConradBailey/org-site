@@ -28,12 +28,6 @@ def build_arg_parser():
   parser.add_argument("DEST", help="directory where html files exported from SRC will be saved")
   return parser
 
-parser = build_arg_parser()
-args = parser.parse_args()
-prog_name = os.path.basename(sys.argv[0])
-src_dir = args.SRC
-web_dir = args.DEST
-
 default_vars = {}
 
 def get_context(org_file):
@@ -148,7 +142,9 @@ class Org_Site:
   # Categorize top-level files into posts, blogs, and others.
   def _get_blogs(self):
     blogs = []
-    for file_path in [os.path.join(self.src_path, x) for x in os.listdir(self.src_path)]:
+    top_level_paths = subprocess.run("git ls-tree --name-only master .".split(), cwd=self.src_path, stdout=subprocess.PIPE, universal_newlines=True).stdout.split('\n')[:-1]
+    top_level_paths = [os.path.join(self.src_path, x) for x in top_level_paths]
+    for file_path in top_level_paths:
       base, ext = os.path.splitext(os.path.basename(file_path))
       if base == self.context['templates-dir']:
         continue
@@ -197,7 +193,9 @@ class Blog:
   def _categorize_contents(self):
     posts = []
     copyq = []
-    for file_path in [os.path.join(self.src_path, x) for x in os.listdir(self.src_path)]:
+    contents = subprocess.run("git ls-tree --name-only master .".split(), cwd=self.src_path, stdout=subprocess.PIPE, universal_newlines=True).stdout.split('\n')[:-1]
+    contents = [os.path.join(self.src_path, x) for x in contents]
+    for file_path in contents:
       basename = os.path.basename(file_path)
       base, ext = os.path.splitext(basename)
       if basename in ['defaults.org', 'index.org']:
@@ -286,11 +284,11 @@ class Post:
     open(os.path.join(post_dir, 'index.html'), 'w').write(render)
 
 def main():
-  if len(sys.argv) != 3:
-    err("incorrect number of arguments given.\nUsage: {} [src-dir] [dest-dir]".format(sys.argv[0]))
-  prog_name = sys.argv[0]
-  src_dir = sys.argv[1]
-  dst_dir = sys.argv[2]
+  parser = build_arg_parser()
+  args = parser.parse_args()
+  prog_name = os.path.basename(sys.argv[0])
+  src_dir = args.SRC
+  dst_dir = args.DEST
 
   site = Org_Site(src_dir, dst_dir)
   site.render()
