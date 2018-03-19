@@ -10,6 +10,7 @@ import datetime
 import dateutil.tz
 import datetime
 import shutil
+import argparse
 from collections import defaultdict as ddict
 
 def err(x):
@@ -19,9 +20,19 @@ def err(x):
 def log(x):
   print(x, file=sys.stderr)
 
+def build_arg_parser():
+  parser = argparse.ArgumentParser(description = "Publish org files in SRC as html in DEST",
+                                   epilog = "Report bugs to: conradbailey92@gmail.com\norg-site home page: <https://github.com/ConradBailey/org-site>",
+                                   formatter_class = argparse.RawTextHelpFormatter)
+  parser.add_argument("SRC", help="directory containing hierarchy of org files")
+  parser.add_argument("DEST", help="directory where html files exported from SRC will be saved")
+  return parser
+
+parser = build_arg_parser()
+args = parser.parse_args()
 prog_name = os.path.basename(sys.argv[0])
-src_dir = sys.argv[1]
-web_dir = sys.argv[2]
+src_dir = args.SRC
+web_dir = args.DEST
 
 default_vars = {}
 
@@ -30,7 +41,9 @@ def get_context(org_file):
   results = re.findall(r'\#\+(.*?):\s*(.*)\s*', org_content)
   context = dict()
   for name, value in results:
-    if value.lower() == 'none':
+    if name[-4:] == "LIST":
+      value = [{name[:-5].lower(): x} for x in value.split()]
+    elif value.lower() == 'none':
       value = None
     elif value.lower() == 'false':
       value = False
