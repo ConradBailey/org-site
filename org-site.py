@@ -13,6 +13,8 @@ import shutil
 import argparse
 from collections import defaultdict as ddict
 
+prog_name = os.path.basename(sys.argv[0])
+
 def err(x):
   print("{}: Error - {}".format(prog_name, x), file=sys.stderr)
   sys.exit(1)
@@ -231,6 +233,7 @@ class Blog:
   def _render_blog_index(self, context):
     template_path = os.path.join(context['templates-dir'], context['blog-index-template'])
     template = open(template_path, 'r').read()
+    context['posts'] = sorted(context['posts'], key=lambda x: x['exact-creation'], reverse=True)
     content = pystache.render(template, context)
     return render_page(content, context)
 
@@ -266,7 +269,8 @@ class Post:
     git_dir, basename = os.path.split(self.src_path)
     mods = subprocess.run("git log --format=%aD {}".format(basename).split(), cwd=git_dir, stdout=subprocess.PIPE, universal_newlines=True).stdout.split('\n')[:-1]
     mods = [datetime.datetime.strptime(x, '%a, %d %b %Y %H:%M:%S %z') for x in mods]
-    return {'creation' : mods[-1].strftime('%Y-%m-%d'),
+    return {'exact-creation' : mods[-1].strftime('%Y-%m-%d %H:%M:%S:%f'),
+            'creation' : mods[-1].strftime('%Y-%m-%d'),
             'last-mod' : mods[0].strftime('%Y-%m-%d')}
 
   def render(self, dst_path, context):
@@ -286,7 +290,6 @@ class Post:
 def main():
   parser = build_arg_parser()
   args = parser.parse_args()
-  prog_name = os.path.basename(sys.argv[0])
   src_dir = args.SRC
   dst_dir = args.DEST
 
