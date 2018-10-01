@@ -1,13 +1,22 @@
 <div>
   <div class="post">
     <h1>{{blog-name}} Index</h1>
+
     {{#rss-url}}
     <p><b><a href="{{site-url}}/{{nav-url}}/{{rss-url}}">RSS Feed</a></b></p>
     {{/rss-url}}
+
+		{{#content}}
+		<div>
+		  {{{content}}}
+		</div>
+		{{/content}}
+
     <ul class="org-ul">
       {{#posts}}
         <li>{{creation}}&nbsp;&nbsp;»&nbsp;&nbsp;<a href="{{site-url}}/{{blog-url}}/{{nav-url}}">{{title}}</a></li>
       {{/posts}}
     </ul>
+
   </div>
 </div>

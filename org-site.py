@@ -49,6 +49,13 @@ def get_context(org_file):
 def str2url(s):
   return urllib.parse.quote(s.lower().replace(' ','_'))
 
+def org2html(org_path):
+  content = subprocess.run("org2html.sh {}".format(org_path).split(), stdout=subprocess.PIPE, universal_newlines=True).stdout
+  if (len(content.strip()) == 0):
+    content = None
+  return content
+
+
 def render_page(content, context):
   context = context.copy()
   context['content'] = content
@@ -82,10 +89,10 @@ class Org_Site:
       post.render(self.dst_path, self.context)
 
     context = self.context.copy()
-    index_path = os.path.join(self.src_path, 'index.org')
+    index_path = os.path.join(self.src_path, 'index.org') #should be self.index_path when inheriting from blog!
     template_path = os.path.join(context['templates-dir'], context['post-template'])
     template = open(template_path, 'r').read()
-    context['content'] = subprocess.run("org2html.sh {}".format(index_path).split(), stdout=subprocess.PIPE, universal_newlines=True).stdout
+    context['content'] = org2html(index_path)
     content = pystache.render(template, context)
     render = render_page(content, context)
     open(os.path.join(self.dst_path, 'index.html'), 'w').write(render)
@@ -171,6 +178,7 @@ class Org_Site:
 class Blog:
   def __init__(self, src_path=None):
     self.src_path = src_path
+    self.index_path = os.path.join(self.src_path, 'index.org')
     self.posts, self.copyq = self._categorize_contents()
     self.context = self._generate_default_context()
 
@@ -187,8 +195,11 @@ class Blog:
     # Build posts context for indexing
     context['posts'] = [post.context for post in self.posts]
 
+    # Gather description from index org page
+    context['content'] = org2html(self.index_path)
+
     # Override defaults with user preferences
-    context.update(get_context(os.path.join(self.src_path, 'index.org')))
+    context.update(get_context(self.index_path))
     return context
 
 
@@ -234,6 +245,7 @@ class Blog:
     template_path = os.path.join(context['templates-dir'], context['blog-index-template'])
     template = open(template_path, 'r').read()
     context['posts'] = sorted(context['posts'], key=lambda x: x['exact-creation'], reverse=True)
+    #context['content'] = org2html(self.src_path)
     content = pystache.render(template, context)
     return render_page(content, context)
 
@@ -282,7 +294,7 @@ class Post:
 
     template_path = os.path.join(context['templates-dir'], context['post-template'])
     template = open(template_path, 'r').read()
-    context['content'] = subprocess.run("org2html.sh {}".format(self.src_path).split(), stdout=subprocess.PIPE, universal_newlines=True).stdout
+    context['content'] = org2html(self.src_path)
     content = pystache.render(template, context)
     render = render_page(content, context)
     open(os.path.join(post_dir, 'index.html'), 'w').write(render)
