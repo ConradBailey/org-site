@@ -13,6 +13,8 @@ import shutil
 import argparse
 from collections import defaultdict as ddict
 
+prog_name = os.path.basename(sys.argv[0])
+
 def err(x):
   print("{}: Error - {}".format(prog_name, x), file=sys.stderr)
   sys.exit(1)
@@ -22,7 +24,7 @@ def log(x):
 
 def build_arg_parser():
   parser = argparse.ArgumentParser(description = "Publish org files in SRC as html in DEST",
-                                   epilog = "Report bugs to: conradbailey92@gmail.com\norg-site home page: <https://github.com/ConradBailey/org-site>",
+                                   epilog = "Report bugs to: conrad@cbailey.tech\norg-site home page: <https://github.com/ConradBailey/org-site>",
                                    formatter_class = argparse.RawTextHelpFormatter)
   parser.add_argument("SRC", help="directory containing hierarchy of org files")
   parser.add_argument("DEST", help="directory where html files exported from SRC will be saved")
@@ -286,7 +288,6 @@ class Post:
 def main():
   parser = build_arg_parser()
   args = parser.parse_args()
-  prog_name = os.path.basename(sys.argv[0])
   src_dir = args.SRC
   dst_dir = args.DEST
 
