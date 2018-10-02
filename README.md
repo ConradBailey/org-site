@@ -67,7 +67,10 @@ here. Root should contain at a minimum
 ### Template Directory ###
 * There must be a folder named `templates` directly under root. This
   will contain all `.mustache` templates necessary for site rendering
-* There are a few *required* `.mustache` templates
+* There are a few *required* `.mustache` templates, examples of each
+  can be found in this
+  repository
+  [here](https://github.com/ConradBailey/org-site/tree/master/templates)
   - `container` :: The outermost template which recursively holds all
     others. Usually `<!DOCTYPE html>` and `<html>...</html>` are
     here. No other template may depend on this one; otherwise circular
