@@ -90,12 +90,8 @@ class Org_Site:
 
     context = self.context.copy()
     index_path = os.path.join(self.src_path, 'index.org') #should be self.index_path when inheriting from blog!
-    template_path = os.path.join(context['templates-dir'], context['post-template'])
-    template = open(template_path, 'r').read()
-    context['content'] = org2html(index_path)
-    content = pystache.render(template, context)
-    render = render_page(content, context)
-    open(os.path.join(self.dst_path, 'index.html'), 'w').write(render)
+    index_post = Post(index_path)
+    index_post.render(self.dst_path, context)
 
 
   def _generate_default_context(self):
@@ -288,7 +284,11 @@ class Post:
   def render(self, dst_path, context):
     context = context.copy()
     context.update(self.context)
-    post_dir = os.path.join(dst_path, self.context['nav-url'])
+    if ('index' != self.context['nav-url']):
+      post_dir = os.path.join(dst_path, self.context['nav-url'])
+    else:
+      post_dir = dst_path
+
     if not os.path.isdir(post_dir):
       os.makedirs(post_dir)
 
