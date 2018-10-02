@@ -12,11 +12,14 @@
 		</div>
 		{{/content}}
 
-    <ul class="org-ul">
+		<table>
       {{#posts}}
-        <li>{{creation}}&nbsp;&nbsp;»&nbsp;&nbsp;<a href="{{site-url}}/{{blog-url}}/{{nav-url}}">{{title}}</a></li>
+			<tr>
+			  <td>{{creation}}</td>
+				<td><a href="{{site-url}}/{{blog-url}}/{{nav-url}}">{{title}}</a></td>
+			</tr>
       {{/posts}}
-    </ul>
+    </table>
 
   </div>
 </div>
