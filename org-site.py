@@ -13,14 +13,18 @@ import shutil
 import argparse
 from collections import defaultdict as ddict
 
+
 prog_name = os.path.basename(sys.argv[0])
+
 
 def err(x):
   print("{}: Error - {}".format(prog_name, x), file=sys.stderr)
   sys.exit(1)
 
+
 def log(x):
   print(x, file=sys.stderr)
+
 
 def build_arg_parser():
   parser = argparse.ArgumentParser(description = "Publish org files in SRC as html in DEST",
@@ -31,6 +35,7 @@ def build_arg_parser():
   return parser
 
 default_vars = {}
+
 
 def get_context(org_file):
   org_content = open(org_file, 'r').read()
@@ -46,8 +51,20 @@ def get_context(org_file):
     context[name.lower()] = value
   return context
 
+
+def sitemap_url_block(url, lastmod, changefreq):
+  return '''\
+  <url>
+    <loc>{}</loc>
+    <lastmod>{}</lastmod>
+    <changefreq>{}</changefreq>
+  </url>
+'''.format(url, lastmod, changefreq)
+
+
 def str2url(s):
   return urllib.parse.quote(s.lower().replace(' ','_'))
+
 
 def org2html(org_path):
   content = subprocess.run("org2html.sh {}".format(org_path).split(), stdout=subprocess.PIPE, universal_newlines=True).stdout
@@ -90,9 +107,37 @@ class Org_Site:
 
     context = self.context.copy()
     index_path = os.path.join(self.src_path, 'index.org') #should be self.index_path when inheriting from blog!
-    index_post = Post(index_path)
-    index_post.render(self.dst_path, context)
+    self.index_post = Post(index_path)
+    self.index_post.render(self.dst_path, context)
 
+    self.build_sitemap(context)
+    self.build_robotstxt(context)
+
+  def build_sitemap(self, context):
+    sitemap = open(os.path.join(self.dst_path, 'sitemap.xml'), 'w')
+    sitemap.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+    sitemap.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n')
+
+    site_url = context['site-url']
+    sitemap.write(sitemap_url_block(site_url, self.index_post.context['last-mod'], 'weekly'))
+    for blog in self.blogs:
+      blog_url = os.path.join(site_url, blog.context['nav-url'])
+      sitemap.write(sitemap_url_block(blog_url, min([x.context['last-mod'] for x in blog.posts]), 'weekly'))
+      for post in blog.posts:
+        post_url = os.path.join(blog_url, post.context['nav-url'])
+        sitemap.write(sitemap_url_block(post_url, post.context['last-mod'], 'weekly'))
+    for post in self.top_blog.posts:
+      post_url = os.path.join(blog_url, post.context['nav-url'])
+      sitemap.write(sitemap_url_block(post_url, post.context['last-mod'], 'weekly'))
+
+    sitemap.write('</urlset>\n')
+    sitemap.close()
+
+  def build_robotstxt(self, context):
+    robotstxt = open(os.path.join(self.dst_path, 'robots.txt'), 'w')
+    sitemap_path = os.path.join(context['site-url'], 'sitemap.xml')
+    robotstxt.write("Sitemap: {}\n".format(sitemap_path))
+    robotstxt.close()
 
   def _generate_default_context(self):
     # Default to None
