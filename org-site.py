@@ -179,11 +179,11 @@ class Org_Site:
 
     for dir_path in self.required_dirs:
       var_name = '{}-dir'.format(dir_path)
-      if not os.path.isdir(os.path.join(self.src_path, self.context[var_name])):
+      if not os.path.isdir(self.context[var_name]):
         err("{} value '{}' is not a directory".format(var_name, self.context[var_name]))
     for template_name in self.required_templates:
       var_name = '{}-template'.format(template_name)
-      file_path = os.path.join(self.src_path, self.context['templates-dir'], self.context[var_name])
+      file_path = os.path.join(self.context['templates-dir'], self.context[var_name])
       if not os.path.isfile(file_path):
         err("{} value '{}' is not a file".format(var_name, self.context[var_name]))
 
@@ -211,7 +211,7 @@ class Org_Site:
 
     # Build the navigation section
     self.context.update({'nav-links': nav_links})
-    nav_template = open(os.path.join(self.src_path, self.context['templates-dir'], self.context['nav-template']), 'r').read()
+    nav_template = open(os.path.join(self.context['templates-dir'], self.context['nav-template']), 'r').read()
     return pystache.render(nav_template, self.context)
 
 
