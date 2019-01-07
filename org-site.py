@@ -67,7 +67,9 @@ def str2url(s):
 
 
 def org2html(org_path):
-  content = subprocess.run("org2html.sh {}".format(org_path).split(), stdout=subprocess.PIPE, universal_newlines=True).stdout
+  current_dir = os.path.abspath(os.path.dirname(__file__))
+  org2html_script = os.path.join(current_dir, 'org2html.sh')
+  content = subprocess.run("{} {}".format(org2html_script, org_path).split(), stdout=subprocess.PIPE, universal_newlines=True).stdout
   if (len(content.strip()) == 0):
     content = None
   return content
